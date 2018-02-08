@@ -104,7 +104,7 @@ answer_two()
 # In[5]:
 
 def answer_three():
-    df1 =  df[(df["Gold"]>1) | (df["Gold.1"]>1)]
+    df1 =  df[(df["Gold"]>0) & (df["Gold.1"]>0)]
     return (abs((df1["Gold"] - df1["Gold.1"])/df1["Gold.2"])).argmax()
     #return df[(df["Gold"] -df["Gold.1"])/df["Gold.2"]  == max(df["Gold"]-df["Gold.1"])/df["Gold.2"]].index[0]
 
