@@ -34,3 +34,29 @@ pd.merge(staff_df, student_df, how = "left", left_index=True, right_index=True)
 
 pd.merge(staff_df, student_df, how = "right", left_index=True, right_index=True)
 # when merging data, if conflict columns exists(same column name), will append that column _x for left dataset, and _y for right dataset
+
+invoices = pd.DataFrame([{'Name': 'Kelly', 'ProductId': 111, 'Quantity': 10},
+                         {'Name': 'Sally', 'ProductId': 222, 'Quantity': 5},
+                         {'Name': 'James', 'ProductId': 111, 'Quantity': 6}])
+
+
+products = pd.DataFrame([{'ProductId': 111, 'ProductName': 'product1', 'Price': 1.2},
+                           {'ProductId': 222, 'ProductName': 'product2', 'Price': 2.3},
+                           {'ProductId': 333, 'ProductName': 'product3', 'Price': 0.8}])
+products = products.set_index("ProductId")
+answer = pd.merge(invoices, products, how="left", left_on = "ProductId", right_index=True)
+# here  use a column from left, and a index from right to join
+
+# if multiple columns as join columns
+staff_df = pd.DataFrame([{'First Name': 'Kelly', 'Last Name': 'Desjardins', 'Role': 'Director of HR'},
+                         {'First Name': 'Sally', 'Last Name': 'Brooks', 'Role': 'Course liasion'},
+                         {'First Name': 'James', 'Last Name': 'Wilde', 'Role': 'Grader'}])
+student_df = pd.DataFrame([{'First Name': 'James', 'Last Name': 'Hammond', 'School': 'Business'},
+                           {'First Name': 'Mike', 'Last Name': 'Smith', 'School': 'Law'},
+                           {'First Name': 'Sally', 'Last Name': 'Brooks', 'School': 'Engineering'}])
+staff_df
+student_df
+pd.merge(staff_df, student_df, how='inner', left_on=['First Name','Last Name'], right_on=['First Name','Last Name'])
+
+
+### Pandas Idioms
