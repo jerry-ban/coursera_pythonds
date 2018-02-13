@@ -41,7 +41,7 @@ states = {'OH': 'Ohio', 'KY': 'Kentucky', 'AS': 'American Samoa', 'NV': 'Nevada'
 # In[ ]:
 ut_file = r"C:\_research\coursera_pythonds\university_towns.txt"
 gdp_file = r"C:\_research\coursera_pythonds\gdplev.xls"
-ut_df = get_list_of_university_towns()
+
 def get_list_of_university_towns():
     '''Returns a DataFrame of towns and the states they are in from the 
     university_towns.txt list. The format of the DataFrame should be:
@@ -75,17 +75,24 @@ def get_list_of_university_towns():
     df = pd.DataFrame(rows,columns = ut_cols)
     return df
 
-    return "ANSWER"
-
+get_list_of_university_towns()
 
 # In[ ]:
-
+data_raw = pd.read_excel(gdp_file, header=0, skiprows=207,  parse_cols = "E:F")
 def get_recession_start():
     '''Returns the year and quarter of the recession start time as a 
-    string value in a format such as 2005q3'''
-    
-    return "ANSWER"
+    string value in a format such as 2005q3, starting from 1996q4'''
+    rec_cols = ['quarter','gdp']
+    data_raw = pd.read_excel(gdp_file, header=0, skiprows=207,  parse_cols = "E:F")
+    data_raw.columns = rec_cols
+    start = None
+    for i in range(len(data_raw)-2):
+        if data_raw.loc[i,"gdp"] > data_raw.loc[i+1,"gdp"] and data_raw.loc[i+1,"gdp"] > data_raw.loc[i+2,"gdp"]:
+            start =data_raw.loc[i,"quarter"]
 
+    return start
+
+get_recession_start()
 
 # In[ ]:
 
