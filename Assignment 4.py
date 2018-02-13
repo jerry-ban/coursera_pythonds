@@ -99,9 +99,20 @@ get_recession_start()
 def get_recession_end():
     '''Returns the year and quarter of the recession end time as a 
     string value in a format such as 2005q3'''
-       
-    return "ANSWER"
+    rec_cols = ['quarter','gdp']
+    data_raw = pd.read_excel(gdp_file, header=0, skiprows=207,  parse_cols = "E:F")
+    data_raw.columns = rec_cols
+    with_depression = False
+    end = None
+    for i in range(len(data_raw)-2):
+        if data_raw.loc[i,"gdp"] > data_raw.loc[i+1,"gdp"] and data_raw.loc[i+1,"gdp"] > data_raw.loc[i+2,"gdp"]:
+            with_depression = True
+        if data_raw.loc[i,"gdp"] < data_raw.loc[i+1,"gdp"] and data_raw.loc[i+1,"gdp"] < data_raw.loc[i+2,"gdp"] and with_depression == True:
+            end = data_raw.loc[i,"quarter"]
+    pass #next for
+    return end
 
+get_recession_end()
 
 # In[ ]:
 
