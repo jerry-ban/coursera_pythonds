@@ -191,19 +191,21 @@ def run_ttest():
     depending on which has a lower mean price ratio (which is equivilent to a
     reduced market loss).'''
 
-    data = convert_housing_data_to_quarters()
+    data_raw = convert_housing_data_to_quarters()
     rec_start = get_recession_start()
     rec_bottom = get_recession_bottom()
-    data = data.loc[:, rec_start:rec_bottom]
-    data = data.reset_index()
+    data_raw = data_raw.loc[:, rec_start:rec_bottom]
+    data_raw = data_raw.reset_index()
 
-    data['PctPriceChange'] = data.apply(lambda row: (row[rec_bottom] - row[rec_start])/row[rec_start], axis=1)
+    data_raw['PctPriceChange'] = data_raw.apply(lambda row: (row[rec_start] - row[rec_bottom])/row[rec_start], axis=1)
+    ut_df =get_list_of_university_towns()
+    ut_df["IsUt"] = 1
+    data = pd.merge(data_raw, ut_df, how = "left", left_on=["State", "RegionName"], right_on=["State", "RegionName"] )
+    data['IsUt'].fillna(0, inplace =True)
+    data = data.dropna(axis=0, how='any')
 
-    uts =set(get_list_of_university_towns()['RegionName'])
-    data['IsUt'] = data.apply(lambda x: 1 if x["RegionName"] in uts else 0, axis=1)
-
-    not_ut = data[data['IsUt']==0].loc[:,'PctPriceChange'].dropna()
-    yes_ut = data[data['IsUt']==1].loc[:,'PctPriceChange'].dropna()
+    not_ut = data[data['IsUt']==0].loc[:,'PctPriceChange']
+    yes_ut = data[data['IsUt']==1].loc[:,'PctPriceChange']
     def better():
         if yes_ut.mean() > not_ut.mean():
             return 'non-university town'

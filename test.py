@@ -15,55 +15,29 @@ get_recession_bottom1()
 convert_housing_data_to_quarters1()
 
 
-def run_ttest1():
-    '''First creates new data showing the decline or growth of housing prices
-    between the recession start and the recession bottom. Then runs a ttest
-    comparing the university town values to the non-university towns values,
-    return whether the alternative hypothesis (that the two groups are the same)
-    is true or not as well as the p-value of the confidence.
 
-    Return the tuple (different, p, better)
-    where
+towns = get_list_of_university_towns()
+startdate = get_recession_start()
+bottomdate = get_recession_bottom()
+houses = convert_housing_data_to_quarters()
 
-    different=True if the t-test is True at a p<0.01 (we reject the null hypothesis),
-    different=False if otherwise (we cannot reject the null hypothesis).
+houses = houses.reset_index()
+houses['recession_diff'] = houses[startdate] - houses[bottomdate]
 
-    The variable p should
-    be equal to the exact p value returned from scipy.stats.ttest_ind(). The
-    value for better should be either "university town" or "non-university town"
-    depending on which has a lower mean price ratio (which is equivilent to a
-    reduced market loss).'''
-    data = convert_housing_data_to_quarters1().copy()
-    data = data.loc[:,'2008q3':'2009q2']
-    data = data.reset_index()
-    def price_ratio(row):
-        return (row['2008q3'] - row['2009q2'])/row['2008q3']
+towns_houses = pd.merge(houses, towns, how='inner', on=['State', 'RegionName'])
+towns_houses['ctown'] = True
+houses = pd.merge(houses, towns_houses, how='outer', on = ['State', 'RegionName',
+                                                          bottomdate, startdate,
+                                                          'recession_diff'])
+houses['ctown'] = houses['ctown'].fillna(False)
+unitowns = houses[houses['ctown'] == True]
+not_unitowns = houses[houses['ctown'] == False]
 
-    data['up&down'] = data.apply(price_ratio,axis=1)
-    #uni data
+t, p = ttest_ind(unitowns['recession_diff'].dropna(), not_unitowns['recession_diff'].dropna())
+different = True if p < 0.01 else False
+better = "university town" if unitowns['recession_diff'].mean() < not_unitowns['recession_diff'].mean() else "non-university town"
 
-    uni_town = get_list_of_university_towns1()['RegionName']
-    uni_town = set(uni_town)
-
-    def is_uni_town(row):
-        #check if the town is a university towns or not.
-        if row['RegionName'] in uni_town:
-            return 1
-        else:
-            return 0
-    data['is_uni'] = data.apply(is_uni_town,axis=1)
-
-
-    not_uni = data[data['is_uni']==0].loc[:,'up&down'].dropna()
-    is_uni  = data[data['is_uni']==1].loc[:,'up&down'].dropna()
-    def better():
-        if not_uni.mean() < is_uni.mean():
-            return 'non-university town'
-        else:
-            return 'university town'
-    p_val = list(ttest_ind(not_uni, is_uni))[1]
-    result = (True,p_val,better())
-    return result
+    return different, p, better
 
 
 run_ttest1()
