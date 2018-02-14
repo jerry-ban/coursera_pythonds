@@ -202,7 +202,7 @@ def answer_ten():
 
 # ### Question 11 (6.6%)
 # Use the following dictionary to group the Countries by Continent, then create a dateframe that displays the sample size (the number of countries in each continent bin), and the sum, mean, and std deviation for the estimated population of each country.
-# 
+#
 # ```python
 # ContinentDict  = {'China':'Asia', 
 #                   'United States':'North America', 

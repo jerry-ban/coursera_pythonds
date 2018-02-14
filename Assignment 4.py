@@ -35,13 +35,15 @@ from scipy.stats import ttest_ind
 # In[ ]:
 
 # Use this dictionary to map state names to two letter acronyms
-states = {'OH': 'Ohio', 'KY': 'Kentucky', 'AS': 'American Samoa', 'NV': 'Nevada', 'WY': 'Wyoming', 'NA': 'National', 'AL': 'Alabama', 'MD': 'Maryland', 'AK': 'Alaska', 'UT': 'Utah', 'OR': 'Oregon', 'MT': 'Montana', 'IL': 'Illinois', 'TN': 'Tennessee', 'DC': 'District of Columbia', 'VT': 'Vermont', 'ID': 'Idaho', 'AR': 'Arkansas', 'ME': 'Maine', 'WA': 'Washington', 'HI': 'Hawaii', 'WI': 'Wisconsin', 'MI': 'Michigan', 'IN': 'Indiana', 'NJ': 'New Jersey', 'AZ': 'Arizona', 'GU': 'Guam', 'MS': 'Mississippi', 'PR': 'Puerto Rico', 'NC': 'North Carolina', 'TX': 'Texas', 'SD': 'South Dakota', 'MP': 'Northern Mariana Islands', 'IA': 'Iowa', 'MO': 'Missouri', 'CT': 'Connecticut', 'WV': 'West Virginia', 'SC': 'South Carolina', 'LA': 'Louisiana', 'KS': 'Kansas', 'NY': 'New York', 'NE': 'Nebraska', 'OK': 'Oklahoma', 'FL': 'Florida', 'CA': 'California', 'CO': 'Colorado', 'PA': 'Pennsylvania', 'DE': 'Delaware', 'NM': 'New Mexico', 'RI': 'Rhode Island', 'MN': 'Minnesota', 'VI': 'Virgin Islands', 'NH': 'New Hampshire', 'MA': 'Massachusetts', 'GA': 'Georgia', 'ND': 'North Dakota', 'VA': 'Virginia'}
-
+states = {"OH": "Ohio", "KY": "Kentucky", "AS": "American Samoa", "NV": "Nevada", "WY": "Wyoming", "NA": "National", "AL": "Alabama", "MD": "Maryland", "AK": "Alaska", "UT": "Utah", "OR": "Oregon", "MT": "Montana", "IL": "Illinois", "TN": "Tennessee", "DC": "District of Columbia", "VT": "Vermont", "ID": "Idaho", "AR": "Arkansas", "ME": "Maine", "WA": "Washington", "HI": "Hawaii", "WI": "Wisconsin", "MI": "Michigan", "IN": "Indiana", "NJ": "New Jersey", "AZ": "Arizona", "GU": "Guam", "MS": "Mississippi", "PR": "Puerto Rico", "NC": "North Carolina", "TX": "Texas", "SD": "South Dakota", "MP": "Northern Mariana Islands", "IA": "Iowa", "MO": "Missouri", "CT": "Connecticut", "WV": "West Virginia", "SC": "South Carolina", "LA": "Louisiana", "KS": "Kansas", "NY": "New York", "NE": "Nebraska", "OK": "Oklahoma", "FL": "Florida", "CA": "California", "CO": "Colorado", "PA": "Pennsylvania", "DE": "Delaware", "NM": "New Mexico", "RI": "Rhode Island", "MN": "Minnesota", "VI": "Virgin Islands", "NH": "New Hampshire", "MA": "Massachusetts", "GA": "Georgia", "ND": "North Dakota", "VA": "Virginia"}
 
 # In[ ]:
-ut_file = r"C:\_research\coursera_pythonds\university_towns.txt"
-gdp_file = r"C:\_research\coursera_pythonds\gdplev.xls"
-
+# ut_file_txt = r"C:\_research\coursera_pythonds\university_towns.txt"
+# gdp_file_exl = r"C:\_research\coursera_pythonds\gdplev.xls"
+# zillow_file_csv = r"C:\_research\coursera_pythonds\City_Zhvi_AllHomes.csv"
+ut_file_txt = r"university_towns.txt"
+gdp_file_exl = r"gdplev.xls"
+zillow_file_csv = r"City_Zhvi_AllHomes.csv"
 def get_list_of_university_towns():
     '''Returns a DataFrame of towns and the states they are in from the 
     university_towns.txt list. The format of the DataFrame should be:
@@ -59,13 +61,14 @@ def get_list_of_university_towns():
 
     state = None
     region = None
-    with open(ut_file) as infile:
+    is_region = False
+    with open(ut_file_txt) as infile:
         for line in infile:
-            if "(" not in line: # it's a state
-                state = line.split("[")[0]
+            if "[edit]" in line : # it's a state
+                state = line.split("[")[0].strip()
                 is_region = False
             else: # it's a region
-                region =line.split("(")[0]
+                region =line.split("(")[0].strip()
                 is_region = True
             if is_region:
                 rows.append([state, region])
@@ -75,55 +78,74 @@ def get_list_of_university_towns():
     df = pd.DataFrame(rows,columns = ut_cols)
     return df
 
-get_list_of_university_towns()
+#get_list_of_university_towns()
 
 # In[ ]:
-data_raw = pd.read_excel(gdp_file, header=0, skiprows=207,  parse_cols = "E:F")
+def get_gdp_df():
+    rec_cols = ["quarter","gdp"]
+    rec_df_raw = pd.read_excel(gdp_file_exl, header=None, skiprows=207,  parse_cols = "E:F")
+    rec_df_raw.columns = rec_cols
+    return rec_df_raw
+
 def get_recession_start():
-    '''Returns the year and quarter of the recession start time as a 
+    '''Returns the year and quarter of the recession start time as a
     string value in a format such as 2005q3, starting from 1996q4'''
-    rec_cols = ['quarter','gdp']
-    data_raw = pd.read_excel(gdp_file, header=0, skiprows=207,  parse_cols = "E:F")
-    data_raw.columns = rec_cols
+
+    data_raw = get_gdp_df()
     start = None
     for i in range(len(data_raw)-2):
         if data_raw.loc[i,"gdp"] > data_raw.loc[i+1,"gdp"] and data_raw.loc[i+1,"gdp"] > data_raw.loc[i+2,"gdp"]:
-            start =data_raw.loc[i,"quarter"]
-
+            start =data_raw.loc[i, "quarter"]
+            break
     return start
 
-get_recession_start()
+#get_recession_start()
 
 # In[ ]:
 
 def get_recession_end():
     '''Returns the year and quarter of the recession end time as a 
     string value in a format such as 2005q3'''
-    rec_cols = ['quarter','gdp']
-    data_raw = pd.read_excel(gdp_file, header=0, skiprows=207,  parse_cols = "E:F")
-    data_raw.columns = rec_cols
-    with_depression = False
+    rec_cols = ["quarter","gdp"]
+    data_raw = get_gdp_df()
+
     end = None
+    with_depression = False
     for i in range(len(data_raw)-2):
         if data_raw.loc[i,"gdp"] > data_raw.loc[i+1,"gdp"] and data_raw.loc[i+1,"gdp"] > data_raw.loc[i+2,"gdp"]:
             with_depression = True
         if data_raw.loc[i,"gdp"] < data_raw.loc[i+1,"gdp"] and data_raw.loc[i+1,"gdp"] < data_raw.loc[i+2,"gdp"] and with_depression == True:
-            end = data_raw.loc[i,"quarter"]
+            end = data_raw.loc[i+2,"quarter"]
+            break
     pass #next for
+
     return end
 
-get_recession_end()
+#get_recession_end()
 
 # In[ ]:
 
 def get_recession_bottom():
     '''Returns the year and quarter of the recession bottom time as a 
     string value in a format such as 2005q3'''
-    
-    return "ANSWER"
+    gdp_df_raw = get_gdp_df()
 
+    rec_start = get_recession_start()
+    rec_start_index = gdp_df_raw[gdp_df_raw.iloc[:, 0] == rec_start].index.values[0]
+    rec_end = get_recession_end()
+    rec_end_index = gdp_df_raw[gdp_df_raw.iloc[:, 0] == rec_end].index.values[0]
+    gdp_df_rec = gdp_df_raw.iloc[rec_start_index:rec_end_index, :]
+    rec_bottom = gdp_df_rec["gdp"].min()
+    rec_bottom_index = gdp_df_rec[gdp_df_rec["gdp"]== rec_bottom].index.values[0]
+    return gdp_df_rec.ix[rec_bottom_index, "quarter"]
 
+#get_recession_bottom()
 # In[ ]:
+
+def change_month_to_quarter(x, monthformat):
+    if monthformat == "yyyy-mm":
+        parts = x.split("-")
+        return parts[0] + "q" + str((int(parts[1])-1)//3 + 1)
 
 def convert_housing_data_to_quarters():
     '''Converts the housing data to quarters and returns it as mean 
@@ -136,10 +158,22 @@ def convert_housing_data_to_quarters():
     
     The resulting dataframe should have 67 columns, and 10,730 rows.
     '''
-    
-    return "ANSWER"
+    df_raw = pd.read_csv(zillow_file_csv)
+    df_raw.drop(["Metro", "CountyName", "RegionID", "SizeRank"], axis=1, inplace=True)
+    df_raw["State"] = df_raw["State"].map(states)
+    df_raw["RegionName"] = df_raw["RegionName"].str.strip()
+    df_raw.set_index(["State", "RegionName"], inplace=True)
+    all_cols = list(df_raw.columns)
+    no_need_cols = all_cols[0:45]
+    df_raw.drop(no_need_cols,axis=1,inplace=1)
 
+    new_cols = [ change_month_to_quarter(x, "yyyy-mm") for x in list(df_raw.columns) if "20" in x]
+    df_raw.columns = new_cols
+    df = df_raw[new_cols].groupby(level = 0, axis = 1).mean()
 
+    return df
+
+#convert_housing_data_to_quarters()
 # In[ ]:
 
 def run_ttest():
@@ -156,6 +190,30 @@ def run_ttest():
     value for better should be either "university town" or "non-university town"
     depending on which has a lower mean price ratio (which is equivilent to a
     reduced market loss).'''
-    
-    return "ANSWER"
+
+    data = convert_housing_data_to_quarters()
+    rec_start = get_recession_start()
+    rec_bottom = get_recession_bottom()
+    data = data.loc[:, rec_start:rec_bottom]
+    data = data.reset_index()
+
+    data['PctPriceChange'] = data.apply(lambda row: (row[rec_bottom] - row[rec_start])/row[rec_start], axis=1)
+
+    uts =set(get_list_of_university_towns()['RegionName'])
+    data['IsUt'] = data.apply(lambda x: 1 if x["RegionName"] in uts else 0, axis=1)
+
+    not_ut = data[data['IsUt']==0].loc[:,'PctPriceChange'].dropna()
+    yes_ut = data[data['IsUt']==1].loc[:,'PctPriceChange'].dropna()
+    def better():
+        if yes_ut.mean() > not_ut.mean():
+            return 'non-university town'
+        else:
+            return 'university town'
+
+    p_val = list(ttest_ind(not_ut, yes_ut))[1]
+    different = True if p_val < 0.01 else False
+    result = (different, p_val, better())
+    return result
+
+run_ttest()
 
