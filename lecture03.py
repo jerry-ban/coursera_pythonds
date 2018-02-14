@@ -1,6 +1,7 @@
 #Merging Data Frames
 import pandas as pd
 import numpy as np
+# census_df = pd.read_csv('C:\_research\coursera_pythonds\census.csv')
 
 df[df['column name'].map(len) < 2] # apply len function to each member of column ["column name"]
 
@@ -26,6 +27,8 @@ student_df = pd.DataFrame([{'Name': 'James', 'School': 'Business', 'Location': '
                            {'Name': 'Sally', 'School': 'Engineering', 'Location': '512 Wilson Crescent'}])
 
 pd.merge(staff_df, student_df, how = "left", left_on = "Name", right_on="Name")
+
+df.set_index(list(df.columns[[0,2]])) # set index by column's index
 
 staff_df = staff_df.set_index("Name")
 student_df = student_df.set_index("Name")
@@ -216,4 +219,78 @@ df=census_df.copy()
 df = df[df['SUMLEV']==50]
 df = df.set_index('STNAME').groupby(level=0)['CENSUS2010POP'].agg({'avg': np.average})
 pd.cut(df['avg'],3)
-pd.cut(df['avg'],3, labes = ["Small", "Medium", "Large"])?
+pd.cut(df['avg'],3, labes = ["Small", "Medium", "Large"])
+
+##### Pivot table is: row is one variable's values, columns is another variable's values, cells are some aggregated values
+cars_df = pd.read_csv("D:\\repos\\coursera_pythonds\\cars.csv")
+df = cars_df.copy()
+df.head(5)
+df.pivot_table(values ="(kW)", index="YEAR", columns="Make", aggfunc=np.mean)
+df.pivot_table(values='(kW)', index='YEAR', columns='Make', aggfunc=[np.mean,np.min], margins=True)
+
+
+####default options
+print(pd.pivot_table(Bikes, index=['Manufacturer','Bike Type']))
+
+###### Date Functionality in Pandas
+#Timestamp
+pd.Timestamp("9/1/2015 10:05AM")
+
+###Period  : a span of time
+pd.Period("3/15/2015")
+
+# index of timestamp is time index
+t1 = pd.Series(list('abc'), [pd.Timestamp('2016-09-01'), pd.Timestamp('2016-09-02'), pd.Timestamp('2016-09-03')])
+type(t1.index)
+
+# index of period is period index
+t2 = pd.Series(list('def'), [pd.Period('2016-09'), pd.Period('2016-10'), pd.Period('2016-11')])
+type(t2.index)
+
+d1 = ['2 June 2013', 'Aug 29, 2014', '2015-06-26', '7/12/16']
+d2=pd.to_datetime(d1)
+ts3 = pd.DataFrame(np.random.randint(10, 100, (4,2)), index=d2, columns=list('ab'))
+ts3
+pd.to_datetime("2.12.17", dayfirst=True)
+
+### timedelta
+pd.Timestamp("9/3/2015")-pd.Timestamp("9/1/2015")
+pd.Timestamp("9/2/2016 8:10AM") + pd.Timedelta("12D 3H")
+
+### Working with dates in a dataframe
+dates = pd.date_range("10-01-2016",periods =9, freq="2w-SUN")
+dates
+df=pd.DataFrame({"count 1": 100+np.random.randint(-5,10, 9).cumsum(),
+                "count 2": 120+np.random.randint(-5,10,9)},
+                index = dates)
+df.index.weekday_name
+df
+df.diff()
+
+#to find each month average
+df.resample("M").mean()
+
+#use partial string to filter data by year/month
+df["2016"]
+df["2016-10"]
+
+# use partial string to filter data by year/month
+df["2016-11":]
+
+# change the frequency of our dates in our DataFrame using asfreq.
+df.asfreq("W", method ="ffill")  # change to weekly data based on current bi-weekly data, so fill in one week with previous week's value"
+
+#view time series
+import matplotlib.pyplot as plt
+%matplotlib inline
+plt.interactive(False)
+df.plot()
+plt.show(block=True)
+array1 = np.random.randint(-5,10, 9)
+array2=array1.cumsum()
+
+df2=pd.DataFrame({"raw": array1, "cumsum": array2})
+df2
+df2.diff()
+pd.DataFrame(np.column_stack([array1, array2]), columns =["raw","cumsum"] )
+pd.DataFrame(np.row_stack([array1, array2]), columns = map(chr, range(ord("a"), ord("a")+9) ))
