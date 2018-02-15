@@ -121,10 +121,14 @@ answer_one()
 # In[ ]:
 
 def answer_two():
-    df1= ScimEn[["Country"]].merge(energy[["Country"]], on = 'Country',how = 'inner' )
+	df1= ScimEn[["Country"]].merge(energy[["Country"]], on = 'Country',how = 'inner' )
     df2= df1[["Country"]].merge(GDP[["Country Name"]], left_on = 'Country', right_on = "Country Name", how = 'inner' )
-    all_rows = len(df2)
-    return all_rows - 15
+    all_rows_inner = len(df2)
+
+    df3= ScimEn[["Country"]].merge(energy[["Country"]], on = 'Country',how = 'outer' )
+    df4= df3[["Country"]].merge(GDP[["Country Name"]], left_on = 'Country', right_on = "Country Name", how = 'outer' )
+    all_rows_outer = len(df4)
+    return all_rows_outer - all_rows_inner
 
 #answer_two()
 
